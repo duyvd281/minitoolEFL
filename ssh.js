@@ -52,7 +52,9 @@ function runcmd(cmd){
                 setTimeout(() => {
                     resolve(data.toString())
                 }, timeout); 
-            })
+            }).stderr.on('data', (data) => {
+                resolve('STDERR: ' + data);
+              });
         })
     })
 }
@@ -76,16 +78,15 @@ function checkstatus(sername){
 
 async function run(){
     try{
-        await connecting().then(resolve => {console.log(resolve)},reject=> {throw reject})
+    /*    await connecting().then(resolve => {console.log(resolve)},reject=> {throw reject})
         await runcmd('cat /sys/class/net/eth0/address').then(resolve => console.log(resolve),reject => { throw reject})
-        /*await connection.exec('cat /sys/class/net/eth0/address', function(err, stream){
+        await connection.exec('cat /sys/class/net/eth0/address', function(err, stream){
             if (err) {
                 throw err
             }
                 stream.on('data', (data) => {
                 console.log("MAC: "+data.toString());
             });
-        })*/
         await check().then(resolve => {
             console.log(resolve)
             }, reject => {
@@ -97,7 +98,7 @@ async function run(){
         await runcmd('service mosquitto stop').then(resolve => console.log(resolve),reject => { throw reject})
         await setInterval(function(){
             checkstatus('mosquitto').then(resolve => console.log(resolve),reject => { throw reject})
-        },2*1000)
+        },2*1000) */
 /*//EFL-HC
         await runcmd('systemctl stop process-manager').then(resolve => console.log(resolve),reject => { throw reject})
         await runcmd('systemctl stop hcg1').then(resolve => console.log(resolve),reject => { throw reject})
@@ -109,6 +110,21 @@ async function run(){
             checkstatus('systemctl restart hcg1').then(resolve => console.log(resolve),reject => { throw reject})
         },10*60000)
 */
+
+//use .then
+connecting().then(resolve => {console.log(resolve)
+    runcmd('cat /sys/class/net/eth0/addresss').then(resolve => {console.log(resolve)
+        check().then(resolve => {console.log(resolve)
+            runcmd('service mosquitto start').then(resolve => {console.log(resolve)
+                checkstatus('mosquitto').then(resolve => {console.log(resolve)
+                    runcmd('service mosquitto stop').then(resolve => {console.log(resolve)
+                        setInterval(function(){checkstatus('mosquitto').then(resolve => console.log(resolve))},2000)
+                    })
+                })
+            })
+        })
+    })
+}) 
     }
     catch(Error){
         console.log(Error)
